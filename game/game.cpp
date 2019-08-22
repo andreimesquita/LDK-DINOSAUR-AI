@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctime>
 #include <cstdlib>
+#include <cmath>
 
 using namespace ldk;
 
@@ -18,13 +19,14 @@ LDKGameSettings gameInit()
 	settings.aspect = ASPECT_RATIO;
 	settings.fullScreen = false;
 	settings.name = WINDOW_TITLE;
-	settings.preallocMemorySize = sizeof(GameState);
+	settings.preallocMemorySize = sizeof(model::GameState);
 	return settings;
 };
 
 void gameStart(void* memory)
 {
-	_gameState = (GameState*)memory;
+    model::gameState = (model::GameState*)memory;
+    model::initialize();
 	view::initialize();
 	unsigned int seed = (unsigned int)std::time(0);
 	std::srand(seed);
@@ -32,7 +34,7 @@ void gameStart(void* memory)
 
 void gameUpdate(float deltaTime)
 {
-	//TODO(andrei)
+	model::update(deltaTime);
 	view::draw();
 };
 
@@ -45,6 +47,5 @@ void gameViewResized(uint32 width, uint32 height)
 
 void gameStop()
 {
-	renderer::material_destroy(_gameState->material);
-	renderer::context_finalize();
+    view::dispose();
 };
