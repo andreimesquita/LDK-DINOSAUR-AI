@@ -1,3 +1,8 @@
+#ifndef VIEW_H
+#define VIEW_H
+
+#include "model.hpp"
+
 static const uint32 WINDOW_WIDTH = 1200;
 static const uint32 WINDOW_HEIGHT = 300;
 static const float ASPECT_RATIO = 1.0f;
@@ -30,7 +35,7 @@ namespace view
 		renderer::context_initialize(255, clearColor, 0);
 		material = loadMaterial("./assets/spritesheet.mat");
 		updateProjMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
-		renderer::spriteBatch_initialize(512);
+		renderer::spriteBatch_initialize(64);
 		
 		//initialize dinosaur
 		renderer::makeSprite(&dinosaurSprite, material,
@@ -51,13 +56,10 @@ namespace view
 
 	void drawCactus()
     {
-        for(int i = 0; i < CACTUS_LENGTH; i++)
-        {
-            model::Cactus & cactus = model::gameState->cactusArray[i];
-            renderer::spriteBatch_draw(&genericCactusSprite,
-                                       cactus.transform.position.x, cactus.transform.position.y,
-                                       cactus.transform.size.x, cactus.transform.size.y);
-        }
+        model::Cactus & cactus = model::gameState->cactus;
+        renderer::spriteBatch_draw(&genericCactusSprite,
+                                   cactus.transform.position.x, cactus.transform.position.y,
+                                   cactus.transform.size.x, cactus.transform.size.y);
     };
 
 	void drawDinosaur()
@@ -79,3 +81,4 @@ namespace view
 		renderer::endFrame();
 	};
 };
+#endif

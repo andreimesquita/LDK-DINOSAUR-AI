@@ -8,6 +8,7 @@ using namespace ldk;
 
 #include "model.hpp"
 #include "view.hpp"
+#include "neuralnetwork.hpp"
 
 const char WINDOW_TITLE[] = "LDK Dinosaur AI";
 
@@ -34,8 +35,11 @@ void gameStart(void* memory)
 
 void gameUpdate(float deltaTime)
 {
+    //TODO(andrei) propagate neural network
 	model::update(deltaTime);
 	view::draw();
+    //TODO(andrei) check if all individuals are dead
+    //TODO(andrei)     IF SO, find best individual and changes some weights
 };
 
 void gameViewResized(uint32 width, uint32 height)

@@ -1,8 +1,9 @@
-static const uint32 CACTUS_LENGTH = 8;
+#ifndef MODEL_H
+#define MODEL_H
 
 namespace model
 {
-    const float SPAWN_CACTUS_X_POSITION = 1200;
+    const float SPAWN_CACTUS_X_POSITION = 1200.0f;
     const float GROUND_Y_POSITION = 100.0f;
     const float OFF_SCREEN_OFFSET = -10.0f;
 
@@ -26,15 +27,17 @@ namespace model
 
     static struct GameState
     {
-        Cactus cactusArray[CACTUS_LENGTH];
+        Cactus cactus;
         Dinosaur dinosaur;
-        float scenerySpeed = 30.0f;
+        float scenerySpeed;
+        //input data
+        bool isJumping;
+        float jumpDeltaSum;
     } *gameState;
 
-    void respawn(Transform & transform)
+    void respawnCactus(Cactus & cactus)
     {
-        transform.position.x = SPAWN_CACTUS_X_POSITION;
-        transform.position.y = GROUND_Y_POSITION;
+        cactus.transform.position = Vec2{SPAWN_CACTUS_X_POSITION,GROUND_Y_POSITION};
     }
 
     void initialize()
@@ -45,24 +48,50 @@ namespace model
         dinosaur.transform.size = Vec2{32.0f,42.0f};
 
         //initialize cactus
-        for(int i = 0; i < CACTUS_LENGTH; i++)
+        gameState->cactus = Cactus();
+        gameState->cactus.transform.size = Vec2{30.0f,15.0f};
+        respawnCactus(gameState->cactus);
+
+        gameState->scenerySpeed = 300.0f;
+        gameState->isJumping = false;
+    };
+
+    void readInput()
+    {
+        if (!gameState->isJumping && input::isKeyDown(input::LDK_KEY_UP))
         {
-            Cactus & cactus = gameState->cactusArray[i];
-            cactus = Cactus();
-            cactus.transform.size = Vec2{30.0f,15.0f};
-            respawn(cactus.transform);
+            gameState->isJumping = true;
         }
     };
 
-    void update(float& deltaTime)
+    void processDinosaur(Dinosaur& dinosaur, float deltaTime)
     {
-        Cactus & cactus = gameState->cactusArray[0];
-        cactus.transform.position.x -= (deltaTime * gameState->scenerySpeed);
-
-        bool mustRespawn = (cactus.transform.position.x + cactus.transform.size.x) <= OFF_SCREEN_OFFSET;
-        if (mustRespawn)
+        if (gameState->isJumping)
         {
-            respawn(cactus.transform);
+            jumpDeltaSum += deltaTime;
+            //TODO(andrei) predict current position
+        }
+
+        dinosaur.transform.position.y = MAX(dinosaur.transform.position.y, );
+        if (dinosaur.transform.position.y == GROUND_Y_POSITION)
+        {
+            gameState->isJumping = false;
+        }
+    };
+
+    void update(float deltaTime)
+    {
+        readInput();
+        processDinosaur(gameState->dinosaur, deltaTime);
+
+        Transform & cactusTransform = gameState->cactus.transform;
+        float movementStep = (deltaTime * gameState->scenerySpeed);
+        cactusTransform.position.x -= movementStep;
+
+        if ((cactusTransform.position.x + cactusTransform.size.x) <= OFF_SCREEN_OFFSET)
+        {
+            respawn(cactusTransform);
         }
     };
 };
+#endif
