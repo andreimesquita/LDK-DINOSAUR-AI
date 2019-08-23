@@ -69,7 +69,9 @@ namespace model
         if (gameState->isJumping)
         {
             jumpDeltaSum += deltaTime;
-            //TODO(andrei) predict current position
+            //TODO(andrei) v1 predict current dinosaur position
+            //TODO(andrei) v2 apply forces (impulse + gravity) to better control the dinosaur over time
+            //TODO(andrei)       the AI should be able to release the up arrow and make the dinosaur fall
         }
 
         dinosaur.transform.position.y = MAX(dinosaur.transform.position.y, );
