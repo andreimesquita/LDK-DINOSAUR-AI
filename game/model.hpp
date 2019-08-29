@@ -6,7 +6,7 @@ namespace model
     const float SPAWN_CACTUS_X_POSITION = 1200.0f;
     const float GROUND_Y_POSITION = 0.0f;
     const float OFF_SCREEN_OFFSET = -10.0f;
-    const int MAX_SCENERY_LEVEL = 8;
+    const uint32 MAX_SCENERY_LEVEL = 8;
 
     struct Transform
     {
@@ -51,14 +51,13 @@ namespace model
 
         void initialize()
         {
-            const float firstScenerySpeed = 300.0f;
-            const float lastScenerySpeed = 850.0f;
+            const float firstScenerySpeed = 550.0f;
+            const float lastScenerySpeed = 1500.0f;
 
             for(int i = 0; i < MAX_SCENERY_LEVEL; i++)
             {
                 float increment = (lastScenerySpeed - firstScenerySpeed);
-                float percentage = (i / MAX_SCENERY_LEVEL);
-
+                float percentage = (i / (float) MAX_SCENERY_LEVEL);
                 speedBySceneryLevel[i] = firstScenerySpeed + increment * percentage;
             }
 
@@ -84,14 +83,9 @@ namespace model
             return speedBySceneryLevel[_sceneryLevel];
         }
 
-        void setSceneryLevel(uint32 newSceneryLevel)
-        {
-            _sceneryLevel = newSceneryLevel;
-        }
-
         void tryChangeSceneryLevel(float deltaTime)
         {
-            if(_sceneryLevel == MAX_SCENERY_LEVEL)
+            if(_sceneryLevel == (MAX_SCENERY_LEVEL - 1))
             {
                 return;
             }
@@ -141,7 +135,7 @@ namespace model
         }
 
         bool isJumpReleased = input::isKeyUp(input::LDK_KEY_UP) || input::isKeyUp(input::LDK_KEY_W);
-        if (isJumpReleased)
+        if (isJumpReleased && gameState->jumpImpulseForce > 0.0f)
         {
             gameState->jumpImpulseForce *= 0.6f;
         }
