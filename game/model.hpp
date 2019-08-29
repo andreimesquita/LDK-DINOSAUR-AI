@@ -4,7 +4,7 @@
 namespace model
 {
     const float SPAWN_CACTUS_X_POSITION = 1200.0f;
-    const float GROUND_Y_POSITION = 100.0f;
+    const float GROUND_Y_POSITION = 0.0f;
     const float OFF_SCREEN_OFFSET = -10.0f;
     const int MAX_SCENERY_LEVEL = 8;
 
@@ -13,6 +13,15 @@ namespace model
         Vec2 position;
         Vec2 size;
     };
+
+    bool hasCollided(Transform& aTransform, Transform& bTransform)
+    {
+        //AABB check
+        return aTransform.position.x < (bTransform.position.x + bTransform.size.x)
+               && (aTransform.position.x + aTransform.size.x) > bTransform.position.x
+               && aTransform.position.y < (bTransform.position.y + bTransform.size.y)
+               && (aTransform.position.y + aTransform.size.y) > bTransform.position.y;
+    }
 
     struct Dinosaur
     {
@@ -36,18 +45,12 @@ namespace model
         float speedBySceneryLevel[MAX_SCENERY_LEVEL];
         Cactus cactus;
         Dinosaur dinosaur;
-        float jumpDeltaSum;
         bool isJumping;
-
-        //input data
-        bool isJumpPressed;
+        float jumpImpulseForce;
+        float gravityForce;
 
         void initialize()
         {
-            _sceneryLevel = 0;
-            _sceneryLevelDeltaSum = 0.0f;
-            jumpDeltaSum = 0.0f;
-
             const float firstScenerySpeed = 300.0f;
             const float lastScenerySpeed = 850.0f;
 
@@ -58,6 +61,22 @@ namespace model
 
                 speedBySceneryLevel[i] = firstScenerySpeed + increment * percentage;
             }
+
+            reset();
+        }
+
+        void reset()
+        {
+            _sceneryLevel = 0;
+            _sceneryLevelDeltaSum = 0.0f;
+            jumpImpulseForce = 0.0f;
+            gravityForce = 0.0f;
+        }
+
+        void applyJumpImpulseForce()
+        {
+            jumpImpulseForce = 1500.0f;
+            gravityForce = jumpImpulseForce * -3.2f;
         }
 
         float getScenerySpeed()
@@ -97,7 +116,7 @@ namespace model
 
         //initialize dinosaur
         Dinosaur & dinosaur = gameState->dinosaur;
-        dinosaur.transform.position = Vec2{30.0f,GROUND_Y_POSITION};
+        dinosaur.transform.position = Vec2{60.0f,GROUND_Y_POSITION};
         dinosaur.transform.size = Vec2{32.0f,42.0f};
 
         //initialize cactus
@@ -106,13 +125,25 @@ namespace model
         respawnCactus(gameState->cactus);
     };
 
+    void resetGame()
+    {
+        respawnCactus(gameState->cactus);
+        gameState->dinosaur.transform.position.y = GROUND_Y_POSITION;
+    };
+
     void readInput()
     {
-        gameState->isJumpPressed = input::getKey(input::LDK_KEY_UP);
-        if (!gameState->isJumping && gameState->isJumpPressed)
+        bool isJumpPressed = input::isKeyDown(input::LDK_KEY_UP) || input::isKeyDown(input::LDK_KEY_W);
+        if (!gameState->isJumping && isJumpPressed)
         {
             gameState->isJumping = true;
-            gameState->jumpDeltaSum = 0.0f;
+            gameState->applyJumpImpulseForce();
+        }
+
+        bool isJumpReleased = input::isKeyUp(input::LDK_KEY_UP) || input::isKeyUp(input::LDK_KEY_W);
+        if (isJumpReleased)
+        {
+            gameState->jumpImpulseForce *= 0.6f;
         }
     };
 
@@ -120,23 +151,16 @@ namespace model
     {
         if (gameState->isJumping)
         {
-            gameState->jumpDeltaSum += deltaTime;
-            if (gameState->isJumpPressed)
+            dinosaur.transform.position.y += gameState->jumpImpulseForce * deltaTime;
+            gameState-> jumpImpulseForce += gameState->gravityForce * deltaTime;
+
+            bool isGrounded = dinosaur.transform.position.y <= GROUND_Y_POSITION;
+            if (isGrounded)
             {
-                //TODO(andrei) apply impulse force over time
-                dinosaur.transform.position.y += 160.0f * deltaTime;
+                dinosaur.transform.position.y = GROUND_Y_POSITION;
+                gameState-> jumpImpulseForce = 0.0f;
+                gameState->isJumping = false;
             }
-        }
-
-        const float gravityForce = -100.0f;
-        dinosaur.transform.position.y += gravityForce * deltaTime;
-
-        dinosaur.transform.position.y = MAX(dinosaur.transform.position.y, GROUND_Y_POSITION);
-        if (dinosaur.transform.position.y == GROUND_Y_POSITION)
-        {
-            gameState->isJumping = false;
-            LogInfo("Jump stopped at %f", gameState->jumpDeltaSum);
-            gameState->jumpDeltaSum = 0.0f;
         }
     };
 
@@ -153,21 +177,13 @@ namespace model
         }
     };
 
-    void readDebugInput()
-    {
-        if (input::isKeyDown(input::LDK_KEY_0)) gameState->setSceneryLevel(0);
-        if (input::isKeyDown(input::LDK_KEY_1)) gameState->setSceneryLevel(1);
-        if (input::isKeyDown(input::LDK_KEY_2)) gameState->setSceneryLevel(2);
-        if (input::isKeyDown(input::LDK_KEY_3)) gameState->setSceneryLevel(3);
-        if (input::isKeyDown(input::LDK_KEY_4)) gameState->setSceneryLevel(4);
-        if (input::isKeyDown(input::LDK_KEY_5)) gameState->setSceneryLevel(5);
-        if (input::isKeyDown(input::LDK_KEY_6)) gameState->setSceneryLevel(6);
-        if (input::isKeyDown(input::LDK_KEY_7)) gameState->setSceneryLevel(7);
-    };
-
     void update(float deltaTime)
     {
-        readDebugInput();
+        if (hasCollided(gameState->dinosaur.transform, gameState->cactus.transform))
+        {
+            resetGame();
+        }
+
         gameState->tryChangeSceneryLevel(deltaTime);
         readInput();
         processDinosaur(gameState->dinosaur, deltaTime);

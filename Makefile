@@ -37,7 +37,9 @@ compile: $(ENTRY_POINT_CPP)
 	copy /Y $(LDK_EDITOR) $(OUTDIR)\$(FINAL_EXE_NAME)
 	
 run:
+	@echo Running...
 	$(OUTDIR)\$(FINAL_EXE_NAME)
+	PAUSE
 
 clean:
 	@echo Cleaning up build folder...

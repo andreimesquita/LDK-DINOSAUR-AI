@@ -16,7 +16,7 @@ namespace view
 
     const uint32 SPRITESHEET_CACTUS_X_COORD = 33;
     const uint32 SPRITESHEET_CACTUS_Y_COORD = 0;
-    const uint32 SPRITESHEET_CACTUS_WIDTH = 4;
+    const uint32 SPRITESHEET_CACTUS_WIDTH = 3;
     const uint32 SPRITESHEET_CACTUS_HEIGHT = 4;
 
     HMaterial material;
@@ -35,7 +35,7 @@ namespace view
 		renderer::context_initialize(255, clearColor, 0);
 		material = loadMaterial("./assets/spritesheet.mat");
 		updateProjMatrix(WINDOW_WIDTH, WINDOW_HEIGHT);
-		renderer::spriteBatch_initialize(64);
+		renderer::spriteBatch_initialize(3);
 		
 		//initialize dinosaur
 		renderer::makeSprite(&dinosaurSprite, material,
