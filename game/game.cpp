@@ -35,11 +35,17 @@ void gameStart(void* memory)
 
 void gameUpdate(float deltaTime)
 {
-    //TODO(andrei) propagate neural network
+    //TODO(andrei) propagate neural network to find current inputs
+    //TODO(andrei)     + The activation function are used to define when
 	model::update(deltaTime);
 	view::draw();
     //TODO(andrei) check if all individuals are dead
-    //TODO(andrei)     IF SO, find best individual and changes some weights
+    //TODO(andrei)     + find best individual
+    //TODO(andrei)     + persist/log current weights in order to restore it later
+    //TODO(andrei)     + clone best individual 99 times
+    //TODO(andrei)         + foreach clone, change some weights a bit (percentage based on current weight)
+    //TODO(andrei)     + restart game with new individuals
+    //TODO(andrei) repeat indefinitely
 };
 
 void gameViewResized(uint32 width, uint32 height)
