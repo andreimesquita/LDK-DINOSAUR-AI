@@ -23,19 +23,6 @@ namespace model
                && (aTransform.position.y + aTransform.size.y) > bTransform.position.y;
     }
 
-    class NeuralNetwork //TODO(andrei) distance, velocity,
-    {
-    public:
-        float inputWeights[3];
-        float hiddenWeights[3];
-        float outputWeights[3];
-    };
-
-    class DinosaurAI
-    {
-        //TODO(andrei)
-    };
-
     struct Dinosaur
     {
         Transform transform;
